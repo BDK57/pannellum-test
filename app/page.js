@@ -84,7 +84,9 @@ const handleUpload = async () => {
       setUploadStatus('An error occurred while uploading');
     }
   };
-
+  const handleView360 = () => {
+    router.push(`/Para/${folderName}`);
+  };
   return (
     <div>
       <input type="file" onChange={handleFileChange} multiple ref={inputFileRef} />
@@ -92,6 +94,8 @@ const handleUpload = async () => {
       <div>{uploading && 'Uploading...'}</div>
       <div>{uploadStatus}</div>
       <div>{folderName && `Folder Name: ${folderName}`}</div>
+      {folderName && <button onClick={handleView360}>View in 360</button>}
+
     </div>
   );
 };
