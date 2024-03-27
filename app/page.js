@@ -1,91 +1,62 @@
 'use client'
-import React, { useEffect, useState } from 'react';
-import '@/public/assets/componentcss/virtualTour.css'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter from 'next/router' instead of 'next/navigation'
+
 const Page = () => {
-  const [pannellumLoaded, setPannellumLoaded] = useState(false);
+  const [files, setFiles] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [folderName, setFolderName] = useState('');
+  const router = useRouter();
 
-  useEffect(() => {
-    const loadPannellum = async () => {
-      // Load Pannellum script
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js';
-      script.async = true;
-      document.body.appendChild(script);
-      script.onload = () => {
-        setPannellumLoaded(true);
-      };
-    };
+  const handleFileChange = (event) => {
+    setFiles(event.target.files);
+  };
 
-    loadPannellum();
+  const handleUpload = async () => {
+    if (!files) return;
 
-    return () => {
-      // Cleanup function to remove Pannellum script
-      const script = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"]');
-      if (script && script.parentNode === document.body) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (pannellumLoaded) {
-      pannellum.viewer("panorama", {
-        default: {
-          firstScene: "house",
-          author: "Hassan Khan",
-          sceneFadeDuration: 1000,
-           "autoLoad": true
-        },
-
-        scenes: {
-          circle: {
-            title: "",
-            hfov: 110,
-            pitch: -3,
-            yaw: 117,
-            type: "equirectangular",
-            panorama: "/assets/vr-images/result.png",
-            hotSpots: [
-              {
-                pitch: -5.1,
-                yaw: 302.9,
-                type: "scene",
-                text: "Desert Tree Area",
-                sceneId: "house",
-              },
-            ],
-          },
-
-          house: {
-            title: "",
-            hfov: 90,
-            pitch: -3,
-            yaw: 90,
-            type: "equirectangular",
-            panorama:"https://pannellum.org/images/alma.jpg",
-            minPitch: -70, // Adjust this value as needed to limit downward movement
-            maxPitch: 50,
-            hotSpots: [
-              {
-                pitch: -2.1,
-                yaw: 80.9,
-                type: "scene",
-                text: "Desert Tree Area",
-                sceneId: "circle",
-              },
-            ],
-          },
-
-
-
-
-        },
-      });
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files[]', file);
     }
-  }, [pannellumLoaded]);
+
+    setUploading(true);
+    setUploadStatus('Accepting images...');
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      setUploading(false);
+
+      if (response.ok) {
+        setFiles(null); // Clear the input field
+        setFolderName(data.folder_name);
+        setUploadStatus(`Folder: ${data.folder}, Execution Time: ${data.execution_time} seconds`);
+
+        router.push(`/Para?folderName=${data.folder_name}`);
+      } else {
+        setUploadStatus(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUploading(false);
+      setUploadStatus('An error occurred while uploading');
+    }
+  };
 
   return (
-    <div id="panorama" style={{width:"90%",height:"600px",marginTop:"120px",marginInline:"auto"}}></div>
+    <div>
+      <input type="file" onChange={handleFileChange} multiple />
+      <button onClick={handleUpload} disabled={uploading}>Upload</button>
+      <div>{uploading && 'Uploading...'}</div>
+      <div>{uploadStatus}</div>
+      <div>Folder Name: {folderName}</div>
+    </div>
   );
 };
 
