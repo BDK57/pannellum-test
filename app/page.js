@@ -62,7 +62,7 @@ const handleUpload = async () => {
     setUploadStatus('Accepting images...');
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/upload', {
+      const response = await fetch('https://serene-gaufre-fa33d0.netlify.app/upload', {
         method: 'POST',
         body: formData
       });

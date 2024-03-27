@@ -2,15 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import '@/public/assets/componentcss/virtualTour.css'
 import { useParams } from 'next/navigation';
-
-// import { useSearchParams } from 'next/navigation'
-
 const Page = () => {
   const [pannellumLoaded, setPannellumLoaded] = useState(false);
   const params = useParams()
   const search = params.folderName;
-  // const searchParams = useSearchParams()
-  // const search = searchParams.get('folderName')
 
 
   useEffect(() => {
